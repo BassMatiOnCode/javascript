@@ -1,0 +1,564 @@
+﻿<!DOCTYPE html>
+<html lang="en-US"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="template-info" file-name="empty.htm" version="2022-10-09" editor="USP" />
+<meta name="author" content="USP" />
+<meta name="creation-date" content="2022-11-21" />
+<meta name="editor" content="USP" />
+<meta name="change-date" content="2022-11-21" />
+<meta name="version" content="1" />
+<meta name="categories" content="JavaScript > Asynchronous Programming > Promise" />
+<meta name="tags" content="programming, JavaScript, asynchronous, promise, tutorial" />
+<meta name="description" content="The <i>promise</i> simplifies asynchronous programming with callback functions and makes it easy to setup a sequence of asynchronous function calls." />
+
+<link rel="stylesheet" href="/inc/page.css" />
+<link rel="stylesheet" href="../local.css" />
+ 
+<title>JavaScript &ndash; Asynchronous Programming &ndash; Promise</title>
+
+</head><body><header id="page-header"><object data="title.svg" type="image/svg+xml" style="height : 100% ; margin-left : 160px"></object></header><div id="main-toolbar"></div><main id="page-content">
+
+<h1>Promise</h1>
+
+<p id="page-abstract"></p>
+
+<p>Consider a long-running procedure, such as an XHR request to a remote server, or a complex database update procedure, running on a different thread, process or host. Typically, a function call just <em>starts</em> the asynchronous process, and then <em>returns immediatly</em>. If we need the asynchronous function result for the following steps, we will have to wait and <em>monitor</em> the process until completion.</p>
+
+<h2 cbc>Prerequisites</h2><div>
+
+<p>You should be familiar with the following parallel computing concepts:</p>
+
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Process_(computing)">Process</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Thread_(computing)">Thread</a></li>
+</ul>
+
+<!--h2--></div>
+
+<h2 cbc>Introduction</h2><div>
+
+<p>Sequential programming is straightforward. You call a function, the function returns a result, you inspect the result and take the next step. With <em>asynchronous</em> functions, things are more complicated. An synchronous <em>starter function</em> starts an asynchronous worker process on a different thread or in a different process. The worker thread runs parallel to the starter thread and will eventually produce the desired result. When the starter function returns to the caller, the result is usually not yet available.</p>
+
+<p>So there must be a way to monitor the processing status and <em>wait</em> for the result.</p>
+
+<p>But what is the advantage of asynchronous functions? Let's consider a sequence of fetch & process procedures, where resources are fetched from a remote server:</p>
+
+<figcaption class="listing">A sequence of blocking procedures</figcaption>
+<pre>
+function fetchAndProcess( ) {
+  const resourceA = blockingFetch( urlA );
+  process( resourceA );
+  const resourceB = blockingFetch( urlB );
+  process( resourceB );
+  const resourceC = blockingFetch( urlC );
+  process( resourceC );
+  console.log( "done" );
+  }
+</pre>
+
+<p>The entire code, including the fetch function code, runs on the caller thread. That has consequences if the fetch procedures take longer that a few milliseconds.</p>
+
+<p>While the blockingFetch function is running, the JavaScript engine cannot processes other threads, GUI events, et cetera. A JavaScript thread is guaranteed to run to completion without interruption. As a result, the user interface appears to be hanging.</p>
+
+<p>This can be addressed with asynchronous (parallel) functions.</p>
+
+<p>We simply start the parallel process, and after a while we fetch the and process the result. In the meantime the starter thread can do other useful things:</p>
+
+<figure>
+  <figcaption class="figure">Asynchronous execution</figcaption>
+  <object data="img\fig-001.svg" type="image/svg+xml"></object>
+  </figure>
+
+<p>The promblem with this approach is the term <em>"after a while"</em> &hellip;</p>
+
+<p>The foreground process must have a means to determine <em>when the result is available</em>.</p>
+
+<h3 cbc>Polling</h3><div>
+
+<p>The simplest and also the worst method of monitoring is <em>polling</em>. The parent process implements a loop and checks the background process status:</p>
+
+<figure>
+  <figcaption class="figure">Polling</figcaption>
+  <object data="img\fig-002.svg" type="image/svg+xml"></object>
+  </figure>
+
+<p>Although simple and easy to understand, polling wastes precious processing power that could have been used better otherwise, and defeats the the asynchronous nature of background processing and its advantages. Effectively, we have a still a <em>blocking</em> foreground procedure.</p>
+
+<!--h3--></div>
+
+<h3 cbc>Callback Functions</h3><div>
+
+<p>What we want is to start the background process, suspend the current thread, and resume when the process signals that it has finished the job:</p>
+
+<figure>
+  <figcaption class="figure">Asynchronous execution</figcaption>
+  <object data="img\fig-003.svg" type="image/svg+xml"></object>
+  </figure>
+
+<p>The foreground thread in figure 3 starts the asynchronous process on a background thread and then suspends execution. Other ready threads can now run. The suspended thread is resumed when the process signals "completion".</p>
+
+<p>Unfortunately, the JavaScript language does not provide the necessary synchronization primitives, so we have to use other means &mdash; <em>callback functions</em>.</p>
+
+<figure>
+  <figcaption class="figure">Asynchronous execution with callbacks</figcaption>
+  <object data="img\fig-004.svg" type="image/svg+xml"></object>
+  </figure>
+
+<p>The foreground thread starts the background process and passes a reference to the callback function that processes the result.</p>
+
+<p>That looks like a simple pretty approach. But things get more complicated if you want to <em>chain</em> multiple asynchronous procedures:</p>
+
+<figure>
+  <figcaption class="figure">Chaining asynchronous procedures</figcaption>
+  <object data="img\fig-005.svg" type="image/svg+xml"></object>
+  </figure>
+
+<p>The dependencies between the processing steps and their order is deeply embedded in the source code. An example:</p>
+
+<figcaption class="listing">A sequence of non-blocking procedures</figcaption>
+<pre>
+function processC( resource ) {
+  process( resource );
+  console.log( "done" );
+  }
+function processB( resource ) {
+  process( resource );
+  callbackFetch( urlB, processB );
+  }
+function processA( resource ) {
+  process( resource );
+  callbackFetch( urlB, processB );
+  }
+function fetchAndProcess( ) {
+  callbackFetch( urlA, processA );
+  }
+</pre>
+
+<p>The example above still looks simple and well structured, but rest assured, if an asynchronous algorithm becomes complex, with branches, error handling and retries, the code will be hard to understand and maintain without additional documentation.</p>
+
+<!--h3--></div>
+
+<h3 cbc>Promises</h3><div>
+
+<p>With asynchronous fetch function that return a <tt>Promise</tt>, this looks as follows:</p>
+
+<figcaption class="listing">A sequence of non-blocking procedures</figcaption>
+<pre>
+asyncFetch( urlA )
+  .then( resourceA => {
+    process( resourceB );
+    return asyncFetch( urlB );
+    } )
+  .then( resourceB => {
+    process( resourceB );
+    return asyncFetch( urlC );
+    } )
+  .then( resourceC => {
+    process( resourceC );
+    console.log( "Success" );
+    } ) 
+  .catch( error => {
+    console.log( "Something went wrong: " + error );
+    } )
+  .finally ( ( ) => {
+    console.log( "Processing completed" );
+    } ) ;
+</pre>
+
+<p>Nice and clean. Note the similarity to familiear exception handling.</p>
+
+<p>The key to understanding this piece of code is to recognize that a function like <tt>asyncFetch</tt> creates a <tt>Promise</tt>, which starts the asynchronous worker process and provides means for completion and error back-notification. The Promise is then returned to the caller.</p>
+
+<p>Its <tt>then</tt>, <tt>catch</tt> and <tt>finally</tt> methods allow to schedule the next asynchronous procedures in the sequence, add error handling and retries, and add some final cleanup code.</p>
+
+<!--h3--></div>
+
+<!--h2--></div>
+
+<h2 cbc>Promise Constructor</h2><div>
+
+<p>The <em>promise constructor</em> has a single argument, a starter function:</p>
+
+<figcaption class="listing">Promise constructor</figcaption>
+<pre>
+const p = new Promise ( starterFunction );
+</pre>
+
+<p>The starter function is called by the promise constructor and must have one or two parameters:</p>
+
+<figcaption class="listing">The starter function</figcaption>
+<pre>
+function starterFunction ( resolve, reject ) {
+  start( asyncWorker, resolve, reject );
+  }
+</pre>
+
+<p>Its sole purpose is to start the asynchronous procedure, forward those function references, and <em>return immediately</em>.</p>
+
+<p>Note that both, promise constructor and starter function, run on the foreground thread, while the worker function runs on a background thread.</p>
+
+<p>The parameters <tt>resolve</tt> and <tt>reject</tt> reference internal promise methods, which cause the promise to resolve (in case of success) or reject (in case of error). These methods are called by the background worker when the job is done:</p>
+
+<figcaption class="listing">Finishing the async worker</figcaption>
+<pre>
+function asyncWorker ( resolve, reject ) {
+  try {
+    const result = doSomeWork( );
+    resolve( result ); 
+    }
+  catch( error ) { 
+    reject( error ); 
+  }	}
+</pre>
+
+<p>The effect of a <tt>resove( )</tt> call is that the next a procedure in the sequence, registered with <tt>then( )</tt>, is started. A <tt>reject( )</tt> causes the error handler, registered with <tt>catch( )</tt>, is started.</p>
+
+<p>Usually, the construction of a promise is wrapped in a function that returns this promise. This simplifies the passing of parameters and encapsulation of local variables. </p>
+
+<figcaption class="listing">Wrapper function</figcaption>
+<pre>
+function wrapper ( parameters ) {
+  let localVariables = someInitialValues;
+  function starterFunction ( resolve, reject ) { &hellip; }
+  const p = new Promise ( starterFunction );
+  return p;
+</pre>
+
+<p>This stuff is really quite abstract, so let's have a look at a real-world example.</p>
+
+<!--h2--></div>
+
+<h2 cbc>Wrapping Construction in a Function</h2><div>
+
+<p>Here we will create an asynchronous <em>load</em> function that takes the URL of a resource to be loaded:</p>
+
+<figcaption class="listing">The load() function returns a Promise</figcaption>
+<pre>
+function load( <hi>url</hi> ) {
+  return new Promise( (resolve, reject) => {
+    <cc>// Starter function, creates an XHR object </cc>
+    <cc>// and registers completion event handlers.</cc>
+    const xhr = new XMLHttpRequest( );
+    xhr.<hi>addEventListener</hi>( "load", (result) => {
+      <cc>// Loading may succeed or fail:</cc>
+      if ( xhr.status === 200 ) resolve ( xhr.responseText );
+      else reject( `${ xhr.status } - ${ xhr.statusText } - ${ url }` );
+      } ) ;
+    xhr.<hi>addEventListener</hi>( "error", (error) => {
+      <cc>// A network error may have occurred</cc>
+      reject ( error );
+      } ) ;
+    <cc>// Setup HTTP method and URL, then send the request</cc>
+    xhr.open( "GET", <hi>url</hi> );
+    xhr.send( );
+    } ) ;
+  }
+</pre>
+
+<p>A <em>starter function</em> is passed to the promise constructor. It has the form of an <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions">arrow function expression</a>:</p>
+
+<pre>(resolve, reject) => { &hellip; }</pre>
+
+<p>This starter function creates an <a href="https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest">XHR</a> object and stores a reference in a local variable. Its purpose is to asynchronously load the specified resource and fire events when the job is done or an error has occurred</p>
+
+<p>Note that the starter function and the event handlers have access to the URL parameter and the local XHR variable, even after the the flow of control has left the function and returned to the caller. This construction is called <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures">closure</a>.</p>
+
+<p>After setting up the XHR, <tt>load</tt> returns the promise to the caller.</p>
+
+<!--h2--></div>
+
+<h2 cbc>Chaining and Error Catching</h2><div>
+
+<p>When the promise constructor returns, the worker function will usually not even have started. So we cannot yet work on the result. But we can <em>schedule</em> one or more functions to process the result(s):</p>
+
+<figcaption class="listing">Chaining Async Procedures</figcaption>
+<pre>
+const p = load( "rsrc-1.txt" )
+  .then( response => {
+    message( response );
+    return load( "rsrc-2.txt" );
+    } )
+  .then( response => {
+    message( response );
+    return load( "rsrc-3.txt" );
+    } )
+  .then( response => {
+    message( response );
+    message( "Sequence completed successfully." );
+    } )
+  .catch( error => {
+    message( "Error: " + error );
+    return "Sequence completed with error(s)" ;
+    } )
+  .finally( ( ) => {
+    message( "Processing completed." );
+    } ) ;
+</pre>
+
+<p>The sequence loads three resources, rsrc-1 to 3. The load function at the top returns a promise. Its <tt>then</tt> method is used to process the result, which is here simply printing out the resource text to a message box. When done, the next resource is loaded, asynchronously as well. And so on.</p>
+
+<p>This approach ensures that resources are retrieved and processed one after the other, in the specified order, event if they arrive at the client in a completely different order.</p>
+
+<p>The <tt>catch</tt> method is used to register a handler for errors. When a previous promise was rejected, the rest of the sequence is skipped. Instead, the sequences continues with the function registered with the catch method.</p>
+
+<p>If none of the previous steps reject their promise, the <tt>catch</tt> function will not be executed.</p>
+
+<p>In either case, the function registered with the <tt>finally</tt> method will be executed. This is the place to put the cleanup code in.</p>
+
+<!--h2--></div>
+
+<h2 cbc>Example 1 - Loading Resources</h2><div>
+
+<p>The ideas of the previous chapter have been put together in example 1:</p>
+
+<figcaption class="example"><a href="promise-demo-1.htm" target="_blank">Promise Demo 1</a></figcaption>
+<iframe id="iframe-0" src="promise-demo-1.htm" style="height:280px"></iframe>
+
+<p>Open the browser developer tools, inspect and click the start button to run the code. Checkout what happens if you change one of the URLs. You should be able to see a 404 error and see the following steps skipped.</p>
+
+<!--h2--></div>
+
+<h2 cbc>Example 2 - User Clicks</h2><div>
+
+<p>This demo uses clicks on a button to resolve or reject a promise. In other words, the user is now the asynchronous process.</p>
+
+<p>This example demonstrates the disadvantages of not using nested functions.</p>
+
+<figcaption class="listing">Click event handler settle the promise</figcaption>
+<pre>
+let countDown;
+let resolveCallback;
+let rejectCallback;
+
+function successClickHandler( ) {
+  message( --countDown );
+  if ( countDown ===  0 ) resolveCallback( "success" );
+  }
+function failClickHandler( ) {
+  rejectCallback( "fail" );
+  }
+</pre>
+
+<p>There is nothing special with the event handlers. The success click handler needs a number of clicks to resolve the promise. They are registered in a promise starter function:</p>
+
+<figcaption>Registering event handlers</figcaption>
+<pre>
+function setupMonitoring ( resolve, reject ) {
+  message( "Worker setup function running." );
+  resolveCallback = resolve;
+  rejectCallback = reject;
+  document.getElementById( "success" ).addEventListener ( "click", successClickHandler ) ;
+  document.getElementById( "fail" ).addEventListener ( "click" , failClickHandler ) ;
+  message( "Worker setup function finished" );
+  }
+</pre>
+
+<p>As we already know, the starter function is called by the promise constructor and supplied with two function references, resolve and reject. These must be stored so that the event handlers above can use them to settle the promise.</p>
+
+<p>The function below shows how the promise is created with the starter function:</p>
+
+<figcaption class="listing">Event handler calls the setup function</figcaption>
+<pre>
+function setupPromise( ) {
+  message( "Setting up the promise." );
+  countDown = 3;
+  new Promise ( setupMonitoring )
+    .then ( (result) => message( "Promise resolved with result " + result )) 
+    .catch ( (result) => message( "Promise failed with result " + result ))
+    .finally( ( ) => { 
+      message( "Removing click event handlers." );
+      document.getElementById( "success" ).removeEventListener ( "click", successClickHandler ) ;
+      document.getElementById( "fail" ).removeEventListener ( "click" , failClickHandler ) ;
+      message(  "Click \"Start\" again to retry!&lt;br/&gt;" );
+      } );
+  message( "Promise has been set up. Click \"Success\" or \"Fail\" to fulfill the promise.&lt;br/&gt;" );
+  }
+</pre>
+
+<p>A <tt>then</tt> method call registers a function for success, a <tt>catch</tt> method call registers a function for failures. But that is not enough: <tt>setupPromise</tt> is called on every click on the start button, and we are registering event handlers in <tt>setupMonitoring</tt>. To prevent accumulating event handlers, we must remove them somewhere. That is done in the <tt>finally</tt> method argument.</p>
+
+<p>For completeness, here is the start button event handler:</p>
+
+<figcaption class="listing">Event handler calls the setup function</figcaption>
+<pre>
+document.getElementById("start").addEventListener( "click", setupPromise ) ;
+</pre>
+
+<p>And here is the live demo:</p>
+
+<figcaption class="example"><a href="promise-demo-2.htm" target="_blank">Promise Demo 2</a></figcaption>
+<iframe id="iframe-0" src="promise-demo-2.htm" style="height:280px"></iframe>
+
+<p>Some notes about the implementation. Firstly, there are three variables, placed in the global scope: <tt>countDown</tt>, <tt>resolveCallback</tt> and <tt>rejectCallbace</tt>. The are required to save the information provided by the promise constructor and the <tt>setupPromise</tt> function.</p>
+
+<p>Placing variable in the global scope is almost never a good idea.</p>
+
+<p>Secondly, the button click event handlers, added in <tt>setupMonitoring</tt>, must be implemented as named functions because they must be removed in <tt>setupPromise</tt> the <tt>promise.finally</tt> function argument. And they must be visible from both places.</p>
+
+<!--h2--></div>
+
+<h2 cbc>Example 3 - Improved Button Click Demo</h2><div>
+
+<p>This one is an improved version of example 2. The code has been restructured. Specifically, functions are now nested to have access to parent function variables and parameters. Additionally, the event handlers unregister themselves before calling <tt>resolve</tt> or <tt>reject</tt>, so that event handler function references don't have to be passed outside. As a result, the <tt>finally</tt> handler does no longer (and cannot) remove the click event listeners.</p>
+
+<figcaption class="listing">Improved <a href="promise-demo-3.htm">demo 3</a></figcaption>
+<pre>
+function setupMonitoring ( countDown ) {
+  return new Promise ( (resolve, reject) => {
+    function successClickHandler( ) {
+      message( --countDown );
+      if ( countDown ===  0 ) {
+        removeEventHandlers( );
+        resolve( "success" );
+      }	}
+    function failClickHandler( ) {
+      removeEventHandlers( );
+      reject( "fail" );
+      }
+    function removeEventHandlers ( ) {
+      document.getElementById( "success" ).removeEventListener ( "click", successClickHandler ) ;
+      document.getElementById( "fail" ).removeEventListener ( "click" , failClickHandler ) ;
+      }
+    message( "Worker setup function running." );
+    document.getElementById( "success" ).addEventListener ( "click", successClickHandler ) ;
+    document.getElementById( "fail" ).addEventListener ( "click" , failClickHandler ) ;
+    message( "Worker setup function finished" );
+    } ) ;
+  }
+
+function setupPromise( ) {
+  message( "Setting up the promise." );
+  setupMonitoring( 3 )
+    .then ( (result) => message(  "Promise resolved with result " + result )) 
+    .catch ( (result) => message(  "Promise failed with result " + result ));
+  message( "Promise has been set up. Click \"Success\" or \"Fail\" to fulfill the promise.<br/>" );
+  }
+</pre>
+
+<figcaption class="example"><a href="promise-demo-3.htm" target="_blank">Promise Demo 3</a></figcaption>
+<iframe id="iframe-0" src="promise-demo-3.htm" style="height:280px"></iframe>
+
+
+<!--h2--></div>
+
+<h2 cbc>Example 4 - Delay</h2><div>
+
+<p>This example creates a wrapper function around the <tt>window.setTimeout</tt> message and returns a promise. Again, we rely on nested functions to create closures and thereby have access to the outer function's variables and parameters, even if the flow of control has left the outer function(s):</p>
+
+<figcaption class="listing">Timer delay function</figcaption>
+<pre>
+function delay( milliseconds ) {
+  let p = new Promise( resolve => { 
+    <cc>// starter function</cc>
+    window.setTimeout( ( ) => {
+      <cc>// timeout callback function</cc>
+      message( "Tick!" );
+      resolve( );
+      }, milliseconds );  <cc>// Second parameter of setTimeout defined the delay</cc>
+    } ) ;
+  return p;
+  }
+</pre>
+
+<p>The delay function has a parameter that carries the delay in milliseconds. The first instruction creates a promise object and passes a starter function argument. It is a function expression with a single parameter called <tt>resolve</tt>. This function is called by the promise constructor.</p>
+
+<p>When executed, the starter function schedules a timeout with the specified number of milliseconds. <tt>setTimeout</tt> expects its own callback function, which in this case has no parameter, prints a "Tick!" message and calls the promise's <tt>resolve</tt> method to signal successful completion.</p>
+
+<figcaption class="listing">Configuring the promise</figcaption>
+<pre>
+document.getElementById( "start" )
+  .addEventListener( "click", ( ) => {
+    message( "Click event handler starting." );
+    delay( 2000 ) <cc>// returns a promise</cc>
+      .then( () => message( "Promise fulfilled.&lt;br/&gt;" ));
+    message( "Click event handler finished." );
+    } ) ;
+</pre>
+
+<p>Here is the live demo:</p>
+
+<figcaption class="example"><a href="promise-demo-4.htm" target="_blank">Promise Demo 4</a></figcaption>
+<iframe id="iframe-0" src="promise-demo-4.htm" style="height:280px"></iframe>
+
+<!--h2--></div>
+
+<h2 cbc>Example 5 - Delay Chain</h2><div>
+
+<p>This one builds on the previous example and shows how to return a result from the callback function and process it in the function chain.</p>
+
+<p>The difference to the previous delay function is that an argument is passed to the <tt>resolve</tt> function call:</p>
+
+<figcaption class="listing">The delay function returns a promise</figcaption>
+<pre>
+function delay( milliseconds ) {
+  message( "Creating a delay promise." );
+  let p = new Promise( (resolve) => { 
+    message( "Promise constructor callback function running." );
+    message( `Setting up a timeout of ${milliseconds} milliseconds.` );
+    window.setTimeout( ( ) => {
+      message( "Timout callback function started." ); 
+      message( "Tick!&lt;br/&gt;" );
+      <hi>resolve( milliseconds )</hi>;
+      message( "Timout callback function finished." ); 
+      }, milliseconds ); 
+    message( "Promise constructor callback function finished." );
+    } ) ;
+</pre>
+
+<p>The promise passes this value to the next promise in the chain, where it is used to calculate the amount of delay for the next promise:</p>
+
+<figcaption class="listing">The processing chain</figcaption>
+<pre>
+document.getElementById( "start" )
+  .addEventListener( "click", ( ) => {
+    message( "Click event handler starting." );
+    delay( 300 )
+    .then( (<hi>t</hi>) => delay( <hi>t + 300</hi> ) )
+    .then( (t) => delay( t + 300 ) )
+    .then( (t) => delay( t + 300 ) )
+    .then( (t) => delay( t + 300 ) )
+    .then( (t) => delay( t + 300 ) )
+    .then( () => message( "Sequence processing completed." ));
+    message( "Click event handler finished." );
+    } ) ;
+</pre>
+
+<p>So after each delay, the time span is prolonged by 300 milliseconds.</p>
+
+<p>Here is a live demo:</p>
+
+<figcaption class="example"><a href="promise-demo-5.htm">Promise Demo 5</a></figcaption>
+<iframe id="iframe-0" src="promise-demo-5.htm" style="height:280px"></iframe>
+
+<p>Click the "Arm" button to setup the promise. When you click the "Success" or "Fail" buttons, the promise settles and calls the methods registered with </p>
+
+<!--h2--></div>
+
+<h2 cbc>Example 6 - Interval Timer</h2><div>
+
+<p>This is another timer demo, based on <tt>window.setInterval</tt>. In contrast to <tt>setTimeout</tt>, the interval timer has to be remove if no longer needed:</p>
+
+<figcaption class="listing">Using an interval timer</figcaption>
+<pre>
+function startIntervalTimer( delay, ticks ) {
+  return new Promise ( (resolve ) => {
+    let i = ticks - 1;
+    const <hi>handle</hi> = window.setInterval( ( ) => {
+      if ( i === 0 ) {
+        window.<hi>clearInterval( handle )</hi>;
+        <hi>resolve</hi> ( `${ ticks } ticks with ${ delay } milliseconds delay each.` );
+        }
+      message( `${ i -- } Tick!` );
+      }, delay ) ;
+    } ) ;
+  }
+</pre>
+
+<figcaption class="example"><a href="promise-demo-6.htm">Promise Demo 6</a></figcaption>
+<iframe id="iframe-0" src="promise-demo-6.htm" style="height:280px"></iframe>
+
+
+<!--h2--></div>
+
+</main><footer id="page-footer"></footer><script type="module" src="/inc/page.js" ></script></body></html>

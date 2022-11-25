@@ -1,0 +1,53 @@
+/*
+ *		svg-flowchart.css    2022-11-21 usp
+ *		Styles for flowchard diagrams
+ */
+
+ marker { 
+	stroke : none;
+	fill : black;
+	}
+
+marker#hollow-arrow {
+	stroke : black ;
+	stroke-width : 1 ;
+	fill : white ;
+	}
+
+path, line {
+	stroke-linecap : round ;
+	}
+ 
+ svg { 
+	stroke : black;
+	stroke-width : 1;
+	fill : white;
+	}
+
+text {
+	stroke : none;
+	fill : black;
+	alignment-baseline : middle;
+	text-anchor : middle ;
+	}
+
+text.left { 
+	text-anchor : start ;
+	}
+
+text.right {
+	text-anchor : end ;
+	}
+
+.arrow {
+	marker-end : url(#arrow) ;
+	}
+
+.hollow-arrow {
+	marker-end : url(#hollow-arrow) ;
+	}
+
+line.thread {
+	stroke-width : 8px ;
+	stroke : #dedede ;
+	}
