@@ -27,7 +27,7 @@ path, line {
 text {
 	stroke : none;
 	fill : black;
-	alignment-baseline : middle;
+	alignment-baseline : central;
 	text-anchor : middle ;
 	}
 

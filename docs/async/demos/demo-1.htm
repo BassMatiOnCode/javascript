@@ -1,0 +1,72 @@
+<html lang="en-US" style="height: fit-content; overflow-y: hidden;"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="template-info" file-name="empty.htm" version="2024-09-15" editor="USP">
+<meta name="author" content="USP">
+<meta name="creation-date" content="2024-10-28">
+<meta name="editor" content="USP">
+<meta name="change-date" content="2024-10-28">
+<meta name="version" content="1">
+<meta name="sectionTitle" content="../../title.svg">
+
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" sizes="all">
+<link rel="stylesheet" href="/inc/web-cat/page-structure/demo-page-1.css">
+<script type="module" src="/inc/web-cat/page-structure/demo-page-1.js"></script>
+
+<style>
+#messages > p { margin-top : 0 ; margin-bottom : 0 }
+</style>
+ 
+<meta name="categories" content="JavaScript > Asynchronous Programming > Promises">
+<meta name="tags" content="JavaScript, Promise">
+<title>Promise Demo 1 (JavaScript &gt; Asynchronous Programming &gt; Promises)</title>
+<meta name="description" content="Demonstrates how to create a promise.">
+
+</head><body style="height: fit-content;">
+
+<div class="hide-if-hosted" style="display: none;"><h1>Demo 1</h1></div>
+
+<p><button id="successButton">Success</button> <button id="failureButton">Failure</button> <button id="reloadButton">Reload</button></p>
+
+<div id="messages"><p>16:12:53 Promise has been set up.</p></div>
+
+<script class="module">
+function addMessage( msg ) { 
+	const p = document.createElement( "P" );
+	p.innerText = new Date().toLocaleTimeString( "de" ) + " " + msg;
+	messages.append( p );
+	}
+function reloadButtonClickHandler ( ) {
+	document.location.reload( );
+	}
+function constructorCallback ( resolve, reject ) {
+	function successButtonClickHandler( ) { 
+		addMessage( "success button click" );
+		resolve( "Promise succeeded" );
+		}
+	function failureButtonClickHandler( ) {
+		addMessage( "failure button click" );
+		reject( "Promise failed" );
+		}
+	successButton.addEventListener( "click" , successButtonClickHandler );
+	failureButton.addEventListener( "click" , failureButtonClickHandler );
+	}
+function fulfillmentHandler( text ) {
+	addMessage( "Fulfilled with " + text );
+	}
+function rejectionHandler( text ) {
+	addMessage( "Rejected with " + text );
+	}
+function settlementHandler( ) {
+	addMessage( "The promise settled." );
+	}
+
+// module init code
+reloadButton.addEventListener( "click", reloadButtonClickHandler );
+const promise = new Promise( constructorCallback );
+promise.then( fulfillmentHandler );
+promise.catch( rejectionHandler );
+promise.finally( settlementHandler );
+addMessage( "Promise has been set up." );
+</script>
+</body></html>

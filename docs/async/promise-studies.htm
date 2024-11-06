@@ -1,0 +1,183 @@
+﻿<html lang="en-US"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="template-info" file-name="empty.htm" version="2024-08-07" editor="USP" />
+<meta name="author" content="USP" />
+<meta name="creation-date" content="2024-11-06" />
+<meta name="editor" content="USP" />
+<meta name="change-date" content="2024-11-06" />
+<meta name="version" content="1" />
+<meta name="sectionTitle" content="../title.svg" />
+
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" sizes="all" />
+<link rel="stylesheet" href="/inc/web-cat/page-structure/tutorial-page-1.css" />
+<script type="module" src="/inc/web-cat/page-structure/tutorial-page-1.js" ></script>
+
+<style>
+h2 { text-indent : -20px ; margin-left : 0px  }
+</style>
+
+<meta name="categories" content="Programming > JavaScript > Asynchronous > Promise" />
+<meta name="tags" content="programming, JavaScript, asynchronous, Promise" />
+<meta name="description" content="This chapter studies more complex scenarios and problems, solved with JavaScript promises." />
+
+<title>Promise Studies (Programming > JavaScript > Promise)</title>
+
+</head><body>
+
+<h1>Promise Studies</h1>
+
+<p id="pageAbstract"></p>
+
+<h2 cbc>Study 1: Recursive Fragment Loading</h2><div>
+
+<p>This study compiles a "large" document from a number of "small" HTML fragments with the <tt>fetch API</tt>.</p>
+
+<p>A fragment in this study is referenced by an ordinary but empty anchor element:</p>
+
+<figure class="listing"><figcaption>Fragment link anchor</figcaption>
+<pre>&lt;a hef="path/to/fragment.htm"&gt;&lt;/a&gt;</pre>
+</figure>
+
+<p>To initiate the recursive loading process, a document script calls <tt>loadFragments()</tt> and provides a reference to the document body element:</p>
+
+<figure class="listing"><figcaption>Starting the process</figcaption>
+<pre>
+<hi>loadFragments</hi>( document.body )
+.then( requestInfos => console.log( requestInfos ));
+</pre></figure>
+
+<p>The function returns a promise that resolves to an array of request info objects:</p>
+
+<figure class="listing"><figcaption>The request info array</figcaption>
+<pre>
+const requestInfos = [ } ;
+const requestInfo = {
+	url : "path/to/fragment.htm" ,
+	injectedElements : [ htmlElement1, htmlElement2, ... ]
+	}
+requestInfos.push( requestInfo );
+</pre></figure>
+
+<p>This info is sent to the console where you can inspect it. For example, you can expand the arrays and click on an element that has been injected. It should be highlighted in the document and on the <tt>elements tab</tt> in the browser dev tools window.</p>
+
+<p><tt>LoadFragments()</tt> creates and returns a promise:</p>
+
+<figure class="listing"><figcaption>The request info array</figcaption>
+<pre>
+function loadFragments( root ) {
+	return new Promise ( resolve => { <tt><hi>&hellip;</hi></tt> } ) ;
+	}
+</pre></figure>
+
+<p>This is <em>the primary promise</em>. Its constructor callback function encloses the entire logic of <tt>loadFragments()</tt>.</p>
+
+<p>The highlighted ellipsis is where the heavy-lifting is done. We will inspect that now:</p>
+
+<figure class="listing"><figcaption>Inside the promise constructor callback function</figcaption>
+<pre>
+const <hi>requestInfos</hi> = [ ] ;    
+let <hi>finishedRequests</hi> = 0 ;
+function <hi>processTree</hi> ( tree ) { <tt><hi>&hellip;</hi></tt> }
+processTree( root ) ;
+</pre></figure>
+
+<p>That is not too complex. The request info array is created (to which the promise will resolve, later), a fetch request counter is created and initialized, and the <tt>processTree()</tt> function is defined. The last instruction above calls this function with a reference to the root element to be processed, the document body in this case.</p>
+
+<p>Note that at this point we have not encountered a call to <tt>resolve()</tt>, which would resolve the promise created above. But we will find this call in a short while. Just hang on.</p>
+
+<figure class="listing"><figcaption>The tree processing function</figcaption>
+<pre>
+function <hi>processTree</hi> ( treeRoot ) {
+	for ( const <hi>anchor</hi> of <hi>treeRoot</hi>.querySelectorAll( "A" )) { <tt><hi>&hellip;</hi></tt> }
+	}
+</pre></figure>
+
+<p>The tree processing function is essentially a loop over all anchor elements among the child elements of the tree root. Each anchor is proccessed as follows:</p>
+
+<figure class="listing"><figcaption>Processing an anchor element</figcaption>
+<pre>
+const requestInfo = requestInfos[ requestInfos.push( { url : anchor.href } ) - 1] ;
+fetch ( anchor.href )
+.then ( response => {
+	<cc>// Process the server response</cc>
+	requestInfo.url = response.url ;
+	if ( response.ok ) return response.text( );
+	else throw response.statusText ;
+	} ) 
+</pre></figure>
+
+<p>The first part creates a request info object, sets the <tt>url</tt> member and appends it to the <tt>requestInfos</tt> array. This url information is required in a processing step that is not (yet) part of this study.</p>
+
+<p>A call to the <tt>fetch()</tt> method creates a request for the resource specified in the <tt>anchor.href</tt> property and returns a <tt>Promise</tt> which eventually resolves to a <tt>Response</tt> object.</p>
+
+<p>A <tt>then()</tt> call attaches a fulfillment event hander to this promise. When the promise enters the fulfilled state, called, the response object from above is passed to the fulfillment handler. Inside the response state is tested. If ok, the promise will resolve to the return value of the <tt>response.text()</tt> and enter the fulfilled state. This causes the next fulfillment handler in the chain to be executed.</p>
+
+<p>If the response is not ok, an exception is thrown, the promise will resolve to the <tt>statusText</tt> string and enter the rejected state. This causes the next rejection handler in the chain to be executed.</p>
+
+<p>Now let's have a look at the next fullfillment handler. The handler was attached with another call to <tt>then()</tt>:</p>
+
+<figure class="listing"><figcaption></figcaption>
+<pre>
+.then ( <hi>text</hi> => { 
+	<cc>// Inject elements into the document</cc>
+	const template = document.createElement( "TEMPLATE" );
+	template.<hi>innerHTML</hi> = <hi>text</hi> ;
+	requestInfo.injectedElements = Array.from( template.content.children );
+	anchor.replaceWith( ...template.content.childNodes );
+	return requestInfo.injectedElements ;
+	} ) 
+</pre></figure>
+
+<p>If not already mentioned, <tt>response.text()</tt> returns a <tt>Promise</tt> that resolves to a string, the text representation of the requested resource. This text is passed to the fulfillment handler, which has been attached to the current promise in the chain.</p>
+
+<p>This text is assigned to the <tt>innerHTML</tt> property of an <tt>HTMLTemplateElement</tt>, which parses the text according to the syntax rules of HTML. When done, we have a real HTML document fragment in <tt>template.content</tt>. This content is used to replace the anchor element that was used initially to provide the resource URL. The instruction literally <em>injects</em> the contnent fragment nodes into the host document.</p>
+
+<p>Unfortunately, this operations empties <tt>template.content</tt>. In order not to loose the references to the injected elements, a copy is stored in the <tt>injectedElements</tt> member of the <tt>requestInfo</tt> object that is associated with this fetch request.</p>
+
+<p>This list of elements is then returned back to the promise in order to resolve it.</p>
+
+<p>The next fulfillment handler in the chain processes the list of injected root elements:</p>
+
+<figure class="listing"><figcaption></figcaption>
+<pre>
+.then ( injectedElements => {
+	<cc>// Recurse into injected elements</cc>
+	for ( const element of injectedElements ) <hi>processTree</hi>( element );
+	} ) 
+</pre></figure>
+
+<p>This is a <em>recursion</em>. Each element in the list is treated in exactly the same way as the initial root node (<tt>document.body</tt>). Each call to <tt>processTree()</tt> increments the number of <tt>finishedRequests</tt>, which causes the last state transition handler in the chain (<tt>.finally( ... )</tt>) <em>not to resolve the primary promise</em>.</p>
+
+<p>Next on the list is the rejection handler:</p>
+
+<figure class="listing"><figcaption></figcaption>
+<pre>
+.catch ( statustext => {
+	<cc>// Inject an error string into the document</cc>
+	anchor.replaceWith( `<< ${ statustext } (${ requestInfo.url }) >>` );
+	} ) 
+</pre></figure>
+
+<p>If something goes wrong in the code above, an error is thrown with an explanatory text message. This text arrives here in this handler. The text is used to fill the text content of the anchor that provided the URL for the requested resource. Usually, the resource doesn't exist. The injected text provides means to track down and fix such kind of errors.</p>
+
+<p>But we are not done yet. The next promise in the chain has a settlement handler attached:</p>
+
+<figure class="listing"><figcaption></figcaption>
+<pre>
+.finally ( ( ) => {
+	<cc>// Resolve the promise returned by loadFragments( )</cc>
+	if ( ( finishedRequests += 1 ) === requestInfos.length ) <hi>resolve</hi>( requestInfos ) ;
+	} );
+</pre></figure>
+
+<p>This handler is called whether the a preceding promise in the chain was fulfilled or rejected. I. e., always when the processing of a fetch request was finished. Its purpose is to check the number of finished requests against the number of pending requests. If all requests have been finised, the primary promise (the one that was created with the first instruction in <tt>loadFragments()</tt>) is <em>resolved</em> with the array of request infos.</p>
+
+<p>Open the developer tools, then click on the start button. Set breakpoints and sinlge-step through the code to get the whole picture:</p>
+
+<figure class="demo"><figcaption>Loading document fragments (<a href="studies/study-01/study-01.htm" target="_blank">study-01.htm</a>)</figcaption>
+<iframe class="content-height-observed" src="studies/study-01/study-01.htm"></iframe></figure>
+
+<!--h2--Recursive Fragment Loading--></div>
+
+</body></html>

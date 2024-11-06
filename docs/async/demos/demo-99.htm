@@ -1,0 +1,17 @@
+<html><head>
+</head><body>
+<div class="remove-if-hosted">
+<h1>Demo 1</h1>
+<p>Try different URLs in the code. See comments.</p>
+</div>
+<script class="module">
+function resolve( response ) { console.log( response ) }
+function reject( reason ) { console.log( reason ) }
+const promise = fetch( "resource.txt" );
+// const promise = fetch( "does-not-exist.txt" );
+// const promise = fetch( "https://www.google.com", { mode: 'cors' } );
+// const promise = fetch( "https://www.google.com", { mode: 'no-cors' } );
+promise.then( resolve, reject );
+console.log( "Promise set up" );
+</script>
+</body></html>

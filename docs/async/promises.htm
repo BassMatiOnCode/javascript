@@ -1,0 +1,540 @@
+﻿<!DOCTYPE html>
+<html lang="en-US"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="template-info" file-name="empty.htm" version="2024-08-07" editor="USP" />
+<meta name="author" content="USP" />
+<meta name="creation-date" content="2022-11-21" />
+<meta name="editor" content="USP" />
+<meta name="change-date" content="2024-10-27" />
+<meta name="version" content="2" />
+<meta name="sectionTitle" content="../title.svg" />
+
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" sizes="all" />
+<link rel="stylesheet" href="/inc/web-cat/page-structure/tutorial-page-1.css" />
+<script type="module" src="/inc/web-cat/page-structure/tutorial-page-1.js" ></script>
+ 
+<meta name="categories" content="JavaScript > Asynchronous Programming > Promise" />
+<meta name="tags" content="programming, JavaScript, asynchronous, promise, tutorial" />
+<meta name="description" content="Asynchronous programming with callbacks can quickly become complicated, difficult to understand and maintain. The JavaScript <i>Promise</i> simplifies makes it easy to setup complex sequences of asynchronous procedures." />
+
+<title>Promise (JavaScript &ndash; Asynchronous Programming)</title>
+
+</head><body>
+
+<h1>Promises</h1>
+
+<p id="pageAbstract"></p>
+
+<h2 cbc>Introduction</h2><div>
+
+<p>A <tt>Promise</tt> can be viewed at as a <em>placeholder for a value</em> <a class="literature-reference" href="references.htm#ref-001">[1]</a> that may be already known, or will obtain its value at some time in the future. A typical example is the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch"><tt>fetch()</tt></a> function, which returns a <tt>Promise</tt> that eventually <em>resolves</em> to a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Response"><tt>Response</tt></a> object. </p>
+
+<p>The life of a promise starts out <tt>"unsettled"</tt> in the <tt>pending</tt> state, and ends up <tt>"settled"</tt> in the <tt>fulfilled</tt> or <tt>rejected</tt> state:</p>
+
+<figure class="figure" id="figure-006">
+	<figcaption>Promise lifecycle</figcaption>
+	<object data="img\fig-006.svg" type="image/svg+xml" style="width:fit-content"></object>
+	</figure>
+
+<p>If the promise successfully resolves to a value, it ends up in the <tt>fulfilled</tt> state. If an error occurs, the promise ends up in the <tt>rejected</tt> state.</p>
+
+<!--h2--Introduction--></div>
+
+<h2 cbc>Creating Promises</h2><div>
+
+<p>Many functions like <a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch"><tt>fetch()</tt></a> already return a <tt>Promise</tt> object, but you can use the <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/Promise"><tt>Promise</tt></a> constructor to create your own:</p>
+
+<figure class="listing"><figcaption>Creating and configuring a promise</figcaption>
+<pre>
+const promise = new <hi>Promise</hi>( constructorCallback );
+promise.<hi>then</hi>( fulfillmentHandler );
+promise.<hi>catch</hi>( rejectionHandler );
+promise.<hi>finally</hi>( settlementHandler );
+</pre></figure>
+
+<p>The functions <a href=""><tt>then</tt></a>, <a href=""><tt>catch</tt></a> and <a href=""><tt>finally</tt></a> are used to attach state change event handlers to the promise. They directly correspond to the state diagram <a href="#figure-006">above</a>. In the demo 1, these handlers simply add a message to a message box in the document:</p>
+
+<figure class="listing"><figcaption>State change monitoring handlers</figcaption>
+<pre>
+function fulfillmentHandler( text ) {
+	addMessage( "Fulfilled with " + text );
+	}
+function rejectionHandler( text ) {
+	addMessage( "Rejected with " + text );
+	}
+function settlementHandler( ) {
+	addMessage( "The promise settled." );
+	}
+</pre></figure>
+
+<p>Note that all these four <tt>Promise</tt> methods are not blocking, they return immediately. The actual work, such as setting up the promise functionality and responding to state changes runs on entirely different threads at some point in the future.</p>
+
+<p>Now let's turn our attention to the <tt>Promise</tt> constructor call, which is supplied with an argument <tt>constructorCallback</tt>. This is a user-defined function, which is called by the internal promise constructor code. Its purpose, in general terms, is to configure and initiate an asynchronous procedure. Here is the demo 1 implementation:</p>
+
+<figure class="listing"><figcaption>Constructor callback function</figcaption>
+<pre>
+function constructorCallback ( <hi>resolve</hi>, <hi>reject</hi> ) {
+	function <hi>successButtonClickHandler</hi>( ) { 
+		addMessage( "success button click" );
+		<hi>resolve</hi>( "Promise succeeded" );
+		}
+	function <hi>failureButtonClickHandler</hi>( ) {
+		addMessage( "failure button click" );
+		<hi>reject</hi>( "Promise failed" );
+		}
+	successButton.addEventListener( "click" , <hi>successButtonClickHandler</hi> );
+	failureButton.addEventListener( "click" , <hi>failureButtonClickHandler</hi> );
+	}
+</pre></figure>
+
+<p>Firstly, the function has two parameters, <tt>resolve</tt> and <tt>reject</tt>. These are references to internal promise methods. They initiate a state transistion from the <tt>pending</tt> into the <tt>fulfilled</tt> or <tt>rejected</tt> states, respectively. In this case, they are called when the user clicks on one of the buttons. So, the asynchronous element in this example is the user, who can click on any button, at any point in time.</p>
+
+<p>The last two instructions simply wire the event handlers to these buttons.</p>
+
+<p>A live example can be examined in <a href="demos/demo-1.htm" target="_blank">demo 1</a>:</p>
+
+<figure class="demo"><figcaption>Demo 1: Creating promises</figcaption>
+<iframe class="content-height-observed" src="demos/demo-1.htm"></iframe>
+</figure>
+
+<p>Click on the success or failure button. The first message comes from the button click handler. The next two messages are injected in the promise state change event handlers.</p>
+
+<div class="note"><p>One the promise is in the settled state, additional clicks on the buttons have no effect. The state change handlers run exactly once or never.</p></div>
+
+<p>To keep things simple, the <tt>Reload</tt> button reloads the entire document so that you can give it another try.</p>
+
+<!--h2--Creating Promises--></div>
+
+<h2 cbc>Late Adding State Change Handlers</h2><div>
+
+<p>If you add state change event handlers to a promise in the settled state, these event handlers are immediately executed. <a href="demos/demo-2.htm" target="_blank">Demo 2</a> demonstrates this. It adds a new button. If you click it, a set of additional handlers is attached to the promise:</p>
+
+<figure class="listing"><figcaption>Adding additional state change handlers</figcaption>
+<pre>
+function addMoreHandlersClickHandler( ) {
+	promise.then( fulfillmentHandler );
+	promise.catch( rejectionHandler );
+	promise.finally( settlementHandler );
+	}
+addHandlers.addEventListener( "click", addMoreHandlersClickHandler );
+</pre></figure>
+
+<p>Here is the live <a href="demos/demo-2.htm" target="_blank">demo 2</a>:</p>
+
+<figure class="demo"><figcaption>Adding additional event handlers</figcaption>
+<iframe class="content-height-observed" src="demos/demo-2.htm"></iframe>
+</figure>
+
+<p>If you add more handlers <em>before</em> you click the settlement buttons, <em>all</em> handlers will be executed when the promise settles. If you add more handlers <em>after</em> you click on the settlement buttons, <em>the additional</em> handlers will immediately be executed.</p>
+
+<!--h2--Late Adding State Change Handlers--></div>
+
+<h2 cbc>Creating Resolved Promises</h2><div>
+
+<p>The <tt>Promise</tt> object provides two static methods, <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/resolve"><tt>resolve()</tt></a>, and <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/reject"><tt>reject()</tt></a>. Both functions take a <em>value</em> argument to which the promise resolves. <a href="demos/demo-3.htm">Demo 3</a> demonstrates how to use them.</p>
+
+<figure class="listing"><figcaption>Creating settled promises</figcaption>
+<pre>
+resolvedButton.addEventListener( "click" , ( ) => {
+	const promise = Promise.<hi>resolve</hi>( 42 );
+	promise.then( value => addMessage( "Resolved with " + value ));
+	promise.catch( value => addMessage( "Rejected with " + value ));
+	} ) ;
+rejectedButton.addEventListener( "click" , ( ) => {
+	const promise = Promise.<hi>reject</hi>( 42 );
+	promise.then( value => addMessage( "Resolved with " + value ));
+	promise.catch( value => addMessage( "Rejected with " + value ));
+	} ) ;
+</pre></figure>
+
+<figure class="demo"><figcaption>Creating settled promises (<a href="demos/demo-3.htm" target="_blank">demo 3</a>)</figcaption>
+<iframe class="content-height-observed" src="demos/demo-3.htm"></iframe>
+</figure>
+
+<!--h2--Creating Resolved Promises--></div>
+
+<h2 cbc>Return Values</h2><div>
+
+
+
+<!--h2--Return Values--></div>
+
+<h2 cbc>Promisification</h2><div>
+
+<p>The function <tt>setTimeout( callbackFunction, delay )</tt> is an asynchronous function which executes the callback function after the specified duration elapsed. <tt>setTimeout()</tt> doesn't return a promise, but the function can be wrapped in a promise constructor callback function:</p>
+
+<figure class="listing"><figcaption>Wrapping setTimeout()</figcaption>
+<pre>
+function wait( duration, id ) {
+	<hi>return</hi> new Promise (( <hi>resolve</hi>, <hi>reject</hi> ) => {
+		<hi>setTimeout</hi>( ( ) => {
+			if ( duration > 2000 ) <hi>reject</hi>( `Wait ${ id }: Delay limit exceeded by ${ Math.round( duration - 2000 ) } milliseconds.` );
+			else <hi>resolve</hi>( `Delay of ${ duration } milliseconds elapsed successfully` ) ;
+			} , duration ) ;
+		} ) ;
+	}
+</pre></figure>
+
+<p>This time, the constructor callback function is implemented as arrow function with the parameters <tt>resolve</tt> and <tt>reject</tt>. The function calls <tt>setTimeout</tt> and passes another arrow function, which calls <tt>reject()</tt> if the dealy exceeds two seconds, otherwise <tt>resolve()</tt>.</p>
+
+<p>Finally, <tt>wait()</tt> function returns the configured promise to the caller.</p>
+
+<p>The caller then can attach state change handlers:</p>
+
+<figure class="listing"><figcaption>Attaching state change handlers</figcaption>
+<pre>
+delayButton.addEventListener( "click" , ( ) => {
+	const value = parseInt( delayValue.value );
+	count += 1;
+	const promise = <hi>wait</hi>( value, count );
+	promise.<hi>then</hi>( msg => addMessage( msg ));
+	promise.<hi>catch</hi>( msg => addMessage( msg ));
+	} ) ;
+</pre></figure>
+
+<figure class="demo"><figcaption>Promisifying setTimeout()</figcaption>
+<iframe class="content-height-observed" src="demos/demo-4.htm"></iframe>
+</figure>
+
+<!--h2--Promisification--></div>
+
+<h2 cbc>Chaining</h2><div>
+
+<p>The state change handler attachment methods <tt>then()</tt>, <tt>catch()</tt> and <tt>finally()</tt> create and return a new <em>Promise</em>. Therefore, <tt>then()</tt>, <tt>catch()</tt> and <tt>finally()</tt> calls can be chained:</p>
+
+<figure class="listing"><figcaption>Chaining demo</figcaption>
+<pre>
+let count = 0;
+startButton.addEventListener( "click" , ( ) => {
+	let duration = parseInt( delayValue.value );
+	<hi>wait</hi>( duration += 1000, count += 1 )
+	.then( msg => addMessage( msg ))
+	.catch( msg => addMessage( msg ))
+	.finally(( ) => addMessage( "Step 1 finished" ))
+	.finally(( ) => wait( duration += 1000, count += 1 ))
+	.then( msg => addMessage( msg ))
+	.catch( msg => addMessage( msg ))
+	.finally(( ) => addMessage( "Step 2 finished" ))
+	.finally(( ) => addMessage( "Sequence complete" ));
+	} ) ;
+</pre></figure>
+
+<p>To understand what is going on there, we can rewrite that:</p>
+
+<figure class="listing"><figcaption>Rewritten chaining demo</figcaption>
+<pre>
+let count = 0;
+startButton.addEventListener( "click" , ( ) => {
+	let duration = parseInt( delayValue.value );
+	const promise1 = <hi>wait</hi>( duration += 1000, count += 1 );
+	const promise2 = promise1.then( msg => addMessage( msg ));
+	const promise3 = promise2.catch( msg => addMessage( msg ));
+	const promise4 = promise3.finally(( ) => addMessage( "Step 1 finished" ));
+	const promise5 = promise4.finally(( ) => wait( duration += 1000, count += 1 ));
+	const promise6 = promise5.then( msg => addMessage( msg ));
+	const promise7 = promise6.catch( msg => addMessage( msg ));
+	const promise8 = promise7.finally(( ) => addMessage( "Step 2 finished" ));
+	promise8.finally(( ) => addMessage( "Sequence complete" ));
+	} ) ;
+</pre></figure>
+
+<p>As in the previous example, <tt>wait()</tt> returns a promise that resolves or rejects after the specified duration. Each line below attaches an state change event handler and creates and returns a new promise.</p>
+
+<p>When promise 1 resolves after the specified amount of time, its fulfillment handler is executed, which adds a success message to the message box. This also resolves promise 2, which has no fulfillment handler attached (catch...) that could perform an action. So the next promise in the chain is resoved, which executes its settlement event handler (finally...), which adds the "Step 1 finished" message and resolves the next promise in the chain.</p>
+
+<p>This one has also has a settlement handler attached, which creates and returns a new wait promise, promise 5. This one settles after the specified duration elapsed, and either becomes fulfilled or rejected.</p>
+
+<p>And so on. In <a href="demos/demo-5.htm">demo 5</a> is a working example:</p>
+
+<figure class="demo"><figcaption>Chaining promises</figcaption>
+<iframe class="content-height-observed" src="demos/demo-5.htm"></iframe>
+</figure>
+
+<!--h2--Chaining--></div>
+
+<h2 cbc>Passing Multiple Values Down the Chain</h2><div>
+
+<p>A promise can resolve or reject to single value. If you need to pass multiple values, and if all values are "ordinary" values, you can simply package them in an object. If one or more values are promises, you cannot just wrap the values in an object, like so:</p>
+
+<figure class="listing"><figcaption>Wrong</figcaption>
+<pre>
+fetch ( filename.value )
+.then ( response => {
+	if ( response.ok ) <hi>return</hi> { url : response.url, text : response.text( ) };
+	else <hi>throw</hi> { url : response.url, message : response.statusText };
+	} )
+.then ( info => console.log( info ))
+.catch( info => console.log( info ));
+} ) ;
+</pre></figure>
+
+<p>There is just a tiny problem: <tt>response.text()</tt> returns a promise... So if you inspect the console, you will see the URL and just the type string "[object Promise]" &ndash; which is not very helpful.</p>
+
+<figure class="demo"><figcaption>The wrong approach (<a href="demos/demo-6-1.htm">Demo 6-1</a></figcaption>
+<iframe class="content-height-observed" src="demos/demo-6-1.htm"></iframe>
+</figure>
+
+<p>To get to the text, we must return <em>a promise</em> that fulfills when <tt>response.text()</tt> finishes. Here is the code:</p>
+
+<figure class="listing"><figcaption>Right</figcaption>
+<pre>
+fetch ( filename.value )
+.then ( response => {
+	if ( response.ok ) return <hi>new Promise</hi>( resolve => {
+		response.<hi>text</hi>( ).<hi>then</hi>( responseText => <hi>resolve</hi>( { 
+			url : <hi>response.url</hi> , 
+			text : <hi>responseText</hi> 
+			} ) ) 
+		} ) ;
+	else throw { url : response.url, message : response.message } ;
+	} )
+.then ( info => console.debug( info ))
+.catch( message => console.debug( message ));
+</pre></figure>
+
+<p>The promise constructor callback function executes <tt>response.text()</tt> and obtains a promise that eventually fulfills to the requested text. A call to <tt>then()</tt> registers a fulfillment handler, which obtains this text and combines it with the <tt>response.url</tt> in an object wrapper.</p>
+
+<p>This (info) object is then passed to the <tt>response()</tt> function call, which fullfils the inner promise, which fulfills the outer promise (created with the first <tt>then()</tt> call). Simplified, the packaged information is passed to the second fulfillment handler in the chain as soon as <tt>response.text()</tt> fulfills:</p>
+
+<pre>url: 'http://localhost/javascript/async/demos/resource.txt', 
+text: 'a text resource'</pre>
+
+<figure class="demo"><figcaption>The right way (<a href="demos/demo-6-2.htm">Demo 6-2</a></figcaption>
+<iframe class="content-height-observed" src="demos/demo-6-2.htm"></iframe>
+</figure>
+
+<p>Note that the <tt>response</tt> object is defined in the first fulfillment handler (<tt>then( response => ... )</tt>, and we cannot access this variable in second fulfillment handler due to the local scope of variables and parameters inside functions.</p>
+
+<p>Tip: Change the filename so that the resource cannot be found. Then you can examine the failure branch. Its structure is much simpler, because there is no asynchronous component involved. Therefore it is fine to simply throw an info object, which will be passed to the next rejection handler in the chain.</p>
+
+<p>A second valid method creates variables for intermediate results <em>in the outer scope</em>. In the example below, we save the response URL in a variable in the function scope:</p>
+
+<figure class="listing"><figcaption>Buffers in outer scope</figcaption>
+<pre>
+function load( filename = filenameInput.value ) {
+	let <hi>responseUrl</hi> ; <cc>// Buffer for intermediate result</cc>
+	return fetch ( filename )
+	.then ( response => {
+		<cc>// Save the response url in outer scope</cc>
+		responseUrl = response.url ;
+		if ( response.ok ) return <hi>response.text( )</hi> ;
+		else throw <hi>response.statusText</hi> ;
+		} )
+	.then ( <hi>text</hi> => console.log( "success " + responseUrl + " " + text ))
+	.catch( <hi>statustext</hi> => console.log( "failure " + responseUrl + " " + statustext ));
+</pre></figure>
+
+<p>The benefit is that it keeps the program structure simple. The buffer variable is accessible in all state change handlers and used to generate the console messages.</p>
+
+<figure class="demo"><figcaption>Alternative (<a href="demos/demo-6-3.htm">Demo 6-3</a></figcaption>
+<iframe class="content-height-observed" src="demos/demo-6-3.htm"></iframe>
+</figure>
+
+<!--h2--Passing Multiple Values Down the Chain--></div>
+
+<h2 cbc>Thenables</h2><div>
+
+<!--TODO-->
+
+<!--h2--Thenables--></div>
+
+<h2 cbc>Other Stuff</h2><div>
+
+<p>To continue with the <tt>fetch()</tt> function, we must have a way to attach our callback functions for the resolve and reject events. This is the <tt>Promise.then()</tt> method:</p>
+
+<figure class="listing"><figcaption>Attaching a resolve handler</figcaption>
+<pre>
+const promise = fetch( someURL );
+promise.then( successHandler, failureHandler );
+console.log( "Promise set up in the pending state." );
+</pre></figure>
+
+<p>You will have to write two handler functions, one for success, and the other for failure. They are also called <em>fulfillment handler</em> and <em>rejection handler</em>.</p>
+
+<figure class="listing"><figcaption>A fetch success handler</figcaption>
+<pre>
+function successHandler ( response ) {
+	<cc>// Retrieve and process the response text</cc>
+	console.log( "Response text processed successfully." );
+	}
+</pre></figure>
+
+<p>The promise calls the <tt>successHandler()</tt> function when the promise resolves and passes a <tt><a href="https://developer.mozilla.org/en-US/docs/Web/API/Response">Response</a></tt> object in the first parameter, which can be used for further processing steps. More on this later.</p>
+
+<p>The fetch request might fail, for example because an invalid URL has been passed to the function. In this case, the promise calls the <tt>failureHandler()</tt>:</p>
+
+<figure class="listing"><figcaption>A fetch failure handler</figcaption>
+<pre>
+function failureHandler ( reason ) {
+	console.error( "Request faild: " + reason.toString( ));
+	}
+</pre></figure>
+
+<p>Note that the call to the <tt>fetch()</tt> method immediately returns. The state change handlers will run on a different thread at some time in the future. In JavaScript, a thread, including the thread thead created the promise, runs uninterrupted until completion. Therefore, the promise setup message in the example above will always appear <em>before</em> the state change handlers will be executed. So you might get the message sequence</p>
+
+<figure class="listing"><figcaption>A possible console message sequence</figcaption>
+<pre>
+Promise set up in the pending state.
+Response text processed successfully.
+</pre></figure>
+
+<p>or something like that:</p>
+
+<figure class="listing"><figcaption>A possible console message sequence</figcaption>
+<pre>
+Promise set up in the pending state.
+Request faild: Invalid URL...
+</pre></figure>
+
+<h3 cbc>then(), catch(), finally()</h3><div>
+
+<p>The failure handler can also be attached with the <tt>Promise.catch()</tt> method:</p>
+
+<figure class="listing"><figcaption>Attaching success, failure and settlement handlers</figcaption>
+<pre>
+const promise = fetch( someURL );
+promise.then( successHandler );
+promise.catch( failureHandler );
+promise.finally( settlementHandler );
+<hi>showBusyIndicator</hi>();
+console.log( "Promise set up in the pending state." );
+</pre></figure>
+
+<p>The similarity to a <tt>try...catch...finally</tt> structure is not a coincidence. The <tt>settlementHandler()</tt> function is always executed, regardless of success or failure. This can be used to finish and cleanup an asynchronous operation:</p>
+
+<figure class="listing"><figcaption>A settlement handler</figcaption>
+<pre>
+function settlementHandler( ) {
+	<hi>hideBusyIndicator</hi>();
+	console.log( "Asynchronous procedure finished." );
+	}
+</pre></figure>
+
+<figure class="listing"><figcaption>A possible console message sequence</figcaption>
+<pre>
+Promise set up in the pending state.
+Response text processed successfully.
+</pre></figure>
+
+<!--h3--then(), catch(), finally()--></div>
+
+<h3 cbc>Experimenting with Promises</h3><div>
+
+<p>We can <em>promisify</em> ordinary asynchronous functions, such as <tt><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/setTimeout">setTimeout()</a></tt>. For this purpose, we create a wrapper function named <tt>"wait()"</tt>, which returns a <tt>Promise</tt>:</p>
+
+<figure class="listing"><figcaption>Wrapper for setTimeout():</figcaption>
+<pre>
+function wait ( duration, number ) {
+	function <hi>constructorCallback</hi> ( resolve, reject ) { ... }
+	return new Promise ( <hi>constructorCallback</hi> );
+	}
+</pre></figure>
+
+<p>The function gets the duration and a number for identification purposes in the parameters. The first instruction creates a callback function named <tt>constructorCallback()</tt>, and the second instruction creates a promise, which is then returned to the caller.</p>
+
+<p>The promise contructor calls the constructorCallback function, which we will inspect next:</p>
+
+<figure class="listing"><figcaption>Executor function</figcaption>
+<pre>
+function <hi>constructorCallback</hi> ( resolve, reject ) {
+	function <hi>timeoutCallback</hi> ( ) { ... }
+	setTimeout( <hi>timeoutCallback</hi>, duration );
+	}
+</pre></figure>
+
+<p>The first instruction defines a callback function, which is then passed to <tt>setTimeout</tt>. This function will be executed when the specified duration elapsed.</p>
+
+<p>Now let's have a look into the timeout callback function. This is where the magic happens:</p>
+
+<figure class="listing"><figcaption>setTimeout callback function</figcaption>
+<pre>
+function <hi>timeoutCallback</hi> ( ) {
+	if ( duration <= 2000 ) resolve( `Promise ${number} succeeded after ${Math.round(duration)} milliseconds.` );
+	else reject( `Promise ${number} failed, maximum runtime exceeded by ${2000 - Math.round(duration)} milliseconds.` );
+	}
+</pre></figure>
+
+<p>The function tests the <tt>duration</tt> value against a fixed limit. Depending on the result, the <tt>resolve()</tt> or the <tt>reject()</tt> function is called with an appropriate message. These functions have been created by the <tt>Promise</tt> constructor, and passed to the <tt>constructorCallback()</tt> function. When we call them, we actually run code that is defined deep inside the Promise class code.</p>
+
+<p>Note that this function runs long after the initial setup code has finished.</p>
+
+<p>Also note that the code references the variables <tt>duration</tt>, <tt>number</tt>, <tt>resolve</tt> and <tt>reject</tt>. They have been defined in an outer function (<tt>wait()</tt> and <tt>constructorCallback()</tt>), so we have a so-called <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures">closure</a> structure, where the references from an inner function to the variables (or paramenters) of an outer function keeps their values alive, evens if the thread of execution has left the outer function(s).</p>
+
+<p>To put the puzzle pieces together, here again the entire code:</p>
+
+<figure class="listing"><figcaption>The wait() function</figcaption>
+<pre>
+function wait ( duration, number ) {
+	function constructorCallback ( resolve, reject ) {
+		function timeoutCallback ( ) {
+			if ( duration <= 2000 ) resolve( `Promise ${number} succeeded after ${Math.round(duration)} milliseconds.` );
+			else reject( `Promise ${number} failed, maximum runtime exceeded by ${2000 - Math.round(duration)} milliseconds.` );
+			}
+		setTimeout( timeoutCallback, duration );
+		}
+	return new Promise ( constructorCallback );
+	}
+</pre></figure>
+
+<p>And here is the code that creates a number of promises with the <tt>wait()</tt> function:</p>
+<figure class="listing"><figcaption>The wait() function</figcaption>
+<pre>
+startButton.addEventListener( "click" , ( ) => {
+	messages.innerHTML = "" ;
+	for ( let i = 0 ; i < 10 ; i  ++ ) {
+		const promise = <hi>wait</hi>( Math.random( ) * 4000, i );
+		promise.<hi>then</hi>( message => addMessage( message ));
+		promise.<hi>catch</hi>( reason => addMessage( reason ));
+		promise.<hi>finally</hi>(( ) => addMessage( "Done!" ));
+		}
+	} ) ;
+</pre></figure>
+
+<p>The code creates 10 promises, returned by <tt>wait()</tt>, and attaches various fulfillment callback functions.</p>
+
+<p>The code can be testes in <a href="demos/demo-2.htm" target="_blank">demo 1</a>. Click the <tt>Start</tt> button to run the code:</p>
+
+<figure class="demo"><figcaption>Demo 1: Creating promises</figcaption>
+<iframe class="content-height-observed" src="demos/demo-2.htm"></iframe>
+</figure>
+
+<p>Notice that the message are ordered by duration, not by their sequence number. If the duration exceeded the limit, the promise was rejected, otherwise fulfilled.</p>
+
+<!--h3--Experimenting with Promises--></div>
+
+<p>To create your own promise, use the <tt>Promise()</tt> constructor function:</p>
+
+<figure class="listing"><figcaption>Creating a Promise</figcaption>
+<pre>
+const promise = new Promise( constructorCallback );
+</pre></figure>
+
+<p>The promise constructor calls the function provided in the <tt>constructorCallback</tt> parameter. The function code typically sets up an asynchronous operation:</p>
+
+<figure class="listing"><figcaption>Promise constructorCallback function</figcaption>
+<pre>
+const constructorCallback = function ( resolveCallback, rejectCallback ) {
+	
+	}
+</pre></figure>
+
+<p>For example, the <tt>fetch()</tt> function call returns a <tt>Promise</tt> that resolves to a <tt>Response</tt> or rejects with a <tt>reason</tt>. To process fulfillment or rejection, use the <tt>Promise.then()</tt> method:</p>
+
+<figure class="listing"><figcaption>Fetching a resource from a server</figcaption>
+<pre>
+function resolve( response ) { console.log( response ) }
+function reject( reason ) { console.log( reason ) }
+const <hi>promise</hi> = fetch( someUrl );
+promise.<hi>then</hi>( <hi>resolve</hi>, <hi>reject</hi> );
+console.log( "Promise set up" );
+</pre></figure>
+
+<figure class="demo"><figcaption>demo 1</figcaption>
+<iframe class="content-height-observed" src="demos/demo-3.htm"></iframe>
+</figure>
+
+
+</div>
+
+</body></html>

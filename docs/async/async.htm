@@ -2,28 +2,31 @@
 <html lang="en-US"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="template-info" file-name="empty.htm" version="2022-10-09" editor="USP" />
+<meta name="template-info" file-name="empty.htm" version="2024-08-07" editor="USP" />
 <meta name="author" content="USP" />
 <meta name="creation-date" content="2022-11-21" />
 <meta name="editor" content="USP" />
-<meta name="change-date" content="2022-11-21" />
-<meta name="version" content="1" />
+<meta name="change-date" content="2024-10-27" />
+<meta name="version" content="2" />
+<meta name="sectionTitle" content="../title.svg" />
+
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" sizes="all" />
+<link rel="stylesheet" href="/inc/web-cat/page-structure/tutorial-page-1.css" />
+<script type="module" src="/inc/web-cat/page-structure/tutorial-page-1.js" ></script>
+ 
 <meta name="categories" content="JavaScript > Asynchronous Programming > Promise" />
 <meta name="tags" content="programming, JavaScript, asynchronous, promise, tutorial" />
-<meta name="description" content="The <i>promise</i> simplifies asynchronous programming with callback functions and makes it easy to setup a sequence of asynchronous function calls." />
+<meta name="description" content="The JavaScript <i>Promise</i> simplifies asynchronous programming makes it easy to setup a sequence of asynchronous procedures." />
 
-<link rel="stylesheet" href="/inc/page.css" />
-<link rel="stylesheet" href="../local.css" />
- 
-<title>JavaScript &ndash; Asynchronous Programming &ndash; Promise</title>
+<title>Promise (JavaScript &ndash; Asynchronous Programming)</title>
 
-</head><body><header id="page-header"><object data="title.svg" type="image/svg+xml" style="height : 100% ; margin-left : 160px"></object></header><div id="main-toolbar"></div><main id="page-content">
+</head><body>
 
 <h1>Promise</h1>
 
-<p id="page-abstract"></p>
+<p id="pageAbstract"></p>
 
-<p>Consider a long-running procedure, such as an XHR request to a remote server, or a complex database update procedure, running on a different thread, process or host. Typically, a function call just <em>starts</em> the asynchronous process, and then <em>returns immediatly</em>. If we need the asynchronous function result for the following steps, we will have to wait and <em>monitor</em> the process until completion.</p>
+<p>While sequential programming is straightforward and simple, long-running procedures can make the GUI thread appear "hanging". This can be avoided using asynchronous function calls. </p>
 
 <h2 cbc>Prerequisites</h2><div>
 
@@ -44,7 +47,7 @@
 
 <p>But what is the advantage of asynchronous functions? Let's consider a sequence of fetch & process procedures, where resources are fetched from a remote server:</p>
 
-<figcaption class="listing">A sequence of blocking procedures</figcaption>
+<figure class="listing"><figcaption>A sequence of blocking procedures</figcaption>
 <pre>
 function fetchAndProcess( ) {
   const resourceA = blockingFetch( urlA );
@@ -56,6 +59,7 @@ function fetchAndProcess( ) {
   console.log( "done" );
   }
 </pre>
+</figure>
 
 <p>The entire code, including the fetch function code, runs on the caller thread. That has consequences if the fetch procedures take longer that a few milliseconds.</p>
 
@@ -65,10 +69,10 @@ function fetchAndProcess( ) {
 
 <p>We simply start the parallel process, and after a while we fetch the and process the result. In the meantime the starter thread can do other useful things:</p>
 
-<figure>
-  <figcaption class="figure">Asynchronous execution</figcaption>
-  <object data="img\fig-001.svg" type="image/svg+xml"></object>
-  </figure>
+<figure class="figure">
+	<figcaption>Asynchronous execution</figcaption>
+	<object data="img\fig-001.svg" type="image/svg+xml"></object>
+	</figure>
 
 <p>The promblem with this approach is the term <em>"after a while"</em> &hellip;</p>
 
@@ -561,4 +565,4 @@ function startIntervalTimer( delay, ticks ) {
 
 <!--h2--></div>
 
-</main><footer id="page-footer"></footer><script type="module" src="/inc/page.js" ></script></body></html>
+</body></html>

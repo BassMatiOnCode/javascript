@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="-120 -25 360 370"
+   width="360"
+   style="border:1px solid silver ; margin: 10px 0 0 0"
+   version="1.1"
+   id="svg7"
+   sodipodi:docname="fig-006.work.svg"
+   inkscape:version="1.4-rc1 (61ec3f2, 2024-09-26)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="2.3544745"
+     inkscape:cx="189.00184"
+     inkscape:cy="47.569002"
+     inkscape:window-width="1368"
+     inkscape:window-height="860"
+     inkscape:window-x="-6"
+     inkscape:window-y="23"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g6" />
+  <xhtml:link
+     rel="stylesheet"
+     href="../../svg-flowchart.css" />
+  <defs
+     id="defs2">
+    <marker
+       id="arrow"
+       viewBox="-2 -2 19 12"
+       refX="12"
+       refY="4"
+       markerUnits="userSpaceOnUse"
+       markerWidth="19"
+       markerHeight="12"
+       orient="auto-start-reverse">
+      <path
+         d="M 0 0 L 15 4 L 0 8 z"
+         id="path1" />
+    </marker>
+    <marker
+       id="hollow-arrow"
+       viewBox="-2 -2 19 12"
+       refX="15"
+       refY="4"
+       markerUnits="userSpaceOnUse"
+       markerWidth="19"
+       markerHeight="12"
+       orient="auto-start-reverse">
+      <path
+         d="M 0 0 L 15 4 L 0 8 z"
+         id="path2" />
+    </marker>
+    <marker
+       id="hollow-circle"
+       viewBox="-5 -5 10 10"
+       refX="0"
+       refY="0"
+       markerUnits="userSpaceOnUse"
+       markerWidth="10"
+       markerHeight="10"
+       orient="auto-start-reverse"
+       style="stroke:black ; stroke-width:1 ; fill:white">
+      <circle
+         r="4"
+         id="circle2" />
+    </marker>
+  </defs>
+  <g
+     id="start"
+     transform="translate(0,0)"
+     style="fill:none;stroke:#000000;stroke-opacity:1">
+    <g
+       id="g4"
+       style="fill:none;stroke:#000000;stroke-opacity:1">
+      <ellipse
+         rx="70"
+         ry="50"
+         id="ellipse2"
+         style="fill:none;stroke:#000000;stroke-opacity:1" />
+      <text
+         y="-29.150555"
+         id="text2"
+         style="text-align:center;text-anchor:middle;fill:none;stroke:#000000;stroke-opacity:1"
+         x="4.5234375">unsettled</text>
+      <g
+         transform="translate(1.0126953,14.150554)"
+         id="g3"
+         style="fill:none;stroke:#000000;stroke-opacity:1">
+        <ellipse
+           rx="40"
+           ry="25"
+           id="ellipse3"
+           style="fill:none;stroke:#000000;stroke-opacity:1"
+           cx="0"
+           cy="0" />
+        <text
+           id="text3"
+           style="fill:none;stroke:#000000;stroke-opacity:1"
+           x="-20.541992"
+           y="3.3193359">pending</text>
+      </g>
+    </g>
+  </g>
+  <g
+     transform="translate(0, 150)"
+     id="g7"
+     style="stroke:#000000;stroke-opacity:1;fill:none">
+    <ellipse
+       rx="100"
+       ry="50"
+       id="ellipse4"
+       style="stroke:#000000;stroke-opacity:1;fill:none" />
+    <text
+       y="20"
+       id="text4"
+       style="stroke:#000000;stroke-opacity:1;fill:none">unsettled</text>
+    <g
+       transform="translate(-40,-15)"
+       id="g5"
+       style="stroke:#000000;stroke-opacity:1;fill:none">
+      <ellipse
+         rx="35"
+         ry="20"
+         id="ellipse5"
+         style="stroke:#000000;stroke-opacity:1;fill:none" />
+      <text
+         id="text5"
+         style="fill:none;stroke:#000000;stroke-opacity:1"
+         x="-21.571289"
+         y="4.4970703">fulfilled</text>
+    </g>
+    <g
+       transform="translate(40,-15)"
+       id="g6"
+       style="stroke:#000000;stroke-opacity:1;fill:none">
+      <ellipse
+         rx="35"
+         ry="20"
+         id="ellipse6"
+         style="stroke:#000000;stroke-opacity:1;fill:none" />
+      <text
+         id="text6"
+         style="fill:none;stroke:#000000;stroke-opacity:1"
+         x="-24.577148"
+         y="3.3193359">rejected</text>
+      <path
+         style="fill:none;stroke:#000000;stroke-opacity:1"
+         d="m -91.189019,-100.07675 c -18.837251,22.028806 -14.644641,60.719995 -7.784544,83.27049"
+         id="path7"
+         sodipodi:nodetypes="cc" />
+      <path
+         style="fill:none;stroke:#000000;stroke-opacity:1"
+         d="M 10.431883,-100.4017 C 30.5,-76.292077 30.5,-35.5 20,-16.65693"
+         id="path8"
+         sodipodi:nodetypes="cc" />
+    </g>
+  </g>
+</svg>

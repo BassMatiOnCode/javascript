@@ -1,0 +1,80 @@
+<html lang="en-US"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="template-info" file-name="empty.htm" version="2024-08-07" editor="USP" />
+<meta name="author" content="USP" />
+<meta name="creation-date" content="2024-11-06" />
+<meta name="editor" content="USP" />
+<meta name="change-date" content="2024-11-06" />
+<meta name="version" content="1" />
+
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" sizes="all" />
+<link rel="stylesheet" href="/inc/web-cat/page-structure/demo-page-1.css" />
+<script type="module" src="/inc/web-cat/page-structure/demo-page-1.js" ></script>
+
+<meta name="categories" content="Programming > JavaScript > Asynchronous > Promise" />
+<meta name="tags" content="programming, JavaScript, asynchronous, Promise, demo, study" />
+<meta name="description" content="This study demonstrates recursive loading of document fragments." />
+
+<title>Study 1 - Recursive loading of document fragments (Programming > JavaScript > Promise > Studies)</title>
+
+<script type="module">
+function loadFragments( root ) {
+	return new Promise ( resolve => {
+		const requestInfos = [ ] ;    // a combination of fragment origin and array of injected elements
+		let settledRequests = 0 ;
+		function processTree ( treeRoot ) {
+			for ( const anchor of treeRoot.querySelectorAll( "A" )) {
+				const requestInfo = requestInfos[ requestInfos.push( { url : anchor.href } ) - 1] ;
+				fetch ( anchor.href )
+				.then ( response => {
+					// Process the server response
+					requestInfo.url = response.url ;
+					if ( response.ok ) return response.text( );
+					else throw response.statusText ;
+					} ) 
+				.then ( text => { 
+					// Inject elements into the document
+					const template = document.createElement( "TEMPLATE" );
+					template.innerHTML = text ;
+					requestInfo.injectedElements = Array.from( template.content.children );
+					anchor.replaceWith( ...template.content.childNodes );
+					return requestInfo.injectedElements ;
+					} ) 
+				.then ( injectedElements => {
+					// Recurse into injected elements
+					for ( const element of injectedElements ) processTree( element );
+					} ) 
+				.catch ( statustext => {
+					// Inject an error string into the document
+					anchor.replaceWith( `<< ${ statustext } (${ requestInfo.url }) >>` );
+					} ) 
+				.finally ( ( ) => {    
+					// Resolve the promise returned by loadFragments( )
+					if ( ( settledRequests += 1 ) === requestInfos.length ) resolve( requestInfos ) ;
+					} );
+				}
+			}
+		processTree( root ) ;
+		} ) ;
+	}
+
+// Start processing
+startButton.addEventListener( "click" , ( ) => {
+	loadFragments( document.body ).then( requestInfos => console.log( requestInfos ));
+	} ) ;
+</script>
+<style>
+ul { list-style-type : none ; padding-left : 20px }
+</style>
+
+</head><body>
+<div class="hide-if-hosted">
+<h1>Study 1 - Recursive loading of document fragments</h1>
+</div>
+
+<p><button id="startButton">Start</button></p>
+
+<a href="node-00.htm"></a>
+<a href="content.htm"></a>
+</body></html>
