@@ -1,0 +1,227 @@
+﻿<!DOCTYPE html>
+<html lang="en-US"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="template-info" file-name="empty.htm" version="2024-08-07" editor="USP" />
+<meta name="author" content="USP" />
+<meta name="creation-date" content="2024-11-10" />
+<meta name="editor" content="USP" />
+<meta name="change-date" content="2024-11-10" />
+<meta name="version" content="1" />
+<meta name="sectionTitle" content="../title.svg" />
+
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" sizes="all" />
+<link rel="stylesheet" href="/inc/web-cat/page-structure/tutorial-page-1.css" />
+<script type="module" src="/inc/web-cat/page-structure/tutorial-page-1.js" ></script>
+ 
+<meta name="categories" content="Programming > JavaScript > Operators > Destructuring" />
+<meta name="tags" content="programming, JavaScript, operator, destructuring" />
+<meta name="description" content="" />
+
+<title>title (Programming > JavaScript > Promise)</title>
+
+</head><body>
+
+<h1>Destructuring Assignments</h1>
+
+<p id="pageAbstract"></p>
+
+<h2 cbc>Introduction</h2><div>
+
+<p>This is a <em>destructuring array assignment</em> operator:</p>
+
+<figure class="listing"><figcaption>Destructuring array assignment syntax</figcaption><pre>
+<hi>[</hi> variable-list <hi>] =</hi> array
+</pre></figure>
+
+<p>The operator can be recognized by the square brackets around a list of variables on the left side.</p>
+
+<p>The destructuring array assignment <em>unpacks</em> array elements into distinct variables:</p>
+
+<figure class="listing"><figcaption>Destructuring array assignment</figcaption><pre>
+let a, b, c ;
+<hi>[</hi>a, b, c<hi>] =</hi> [12, 23, 45] ;
+console.log( a, b, c );
+<cc>	12 23 45</cc>
+</pre></figure>
+
+<p>The variable declation can be combined in the instruction by including the <tt>const</tt> or <tt>let</tt> keyword:</p>
+
+<figure class="listing"><figcaption>Destructuring array assignment and variable declaration</figcaption><pre>
+<hi>const [</hi>a, b, c<hi>] =</hi> [12, 23, 45] ;
+console.log( a, b, c );
+<cc>	12 23 45</cc>
+</pre></figure>
+
+<p>If there are more variables than array elements, the unassociated variables remain <em>undefined:</em></p>
+
+<figure class="listing"><figcaption>Destructuring array assignment and variable declaration</figcaption><pre>
+<hi>const [</hi>a, b, c<hi>] =</hi> [12, 23, 45] ;
+console.log( a, b, c, d, e );
+<cc>	12 23 45 undefined undefined</cc>
+</pre></figure>
+
+<p>The concept can also be applied on objects:</p>
+
+<figure class="listing"><figcaption>Destructuring object assignment syntax</figcaption><pre>
+<hi>{</hi> variable-list <hi>} =</hi> object
+</pre></figure>
+
+<p>This is a <em>destructuring object assigment</em> operator. Object members are related to variables <em>by name</em>:</p>
+
+<figure class="listing"><figcaption>Destructuring object members</figcaption><pre>
+<hi>const {</hi> a, b, c <hi>}</hi> = { a : "John" , b : "Doe" , c : 42 };
+console.log( a, b, c );
+<cc>	John Doe 42</cc>
+</pre></figure>
+
+<p>The next example demonstrates the relationship between variable names and object member names:</p>
+
+<figure class="listing"><figcaption>Relating variables to object members</figcaption><pre>
+<hi>let {</hi> c, a, b <hi>} =</hi> { a : "John" , b : "Doe" , c : 42 };
+console.log( a, b, c );
+<cc>	John Doe 42</cc>
+</pre></figure>
+
+<p>Although the variables are in a completely different order, the assignments are semantically correct, as the console output indicates.</p>
+
+<!--h2--Introduction--></div>
+
+<h2 cbc>Advanced Destructuring</h2><div>
+
+<h3 cbc>Separate Variable Declaration</h3><div>
+
+<p>If you need a <em>separate variable declaration</em>, the destructuring object assignment needs to be enclosed in a set of  parentheses:</p>
+
+<figure class="listing"><figcaption>Separate variable declaration</figcaption><pre>
+let a, b, c ;
+<hi><b>(</b></hi> { a, b, c } = { a : "John" , b : "Doe" , c : 42 } <hi><b>)</b></hi> ;
+console.log( a, b, c );
+<cc>	John Doe 42</cc>
+</pre></figure>
+
+<!--h3--Separate Variable Declaration--></div>
+
+<h3 cbc>Relating Object Members to Variables</h3><div>
+
+<p>Variable names can be choosen differently by explicitly <em>associating</em> an object member nams to a variable name:</p>
+
+<figure class="listing"><figcaption>Member &ndash; variable  association syntax</figcaption><pre>
+<hi>member-name <b>:</b></hi> variable-name
+</pre></figure>
+
+<p>The variable name is preceded by the source object member name, followed by a colon. The expression <em>relates</em> an object member to a variable name. Here is an example:</p>
+
+<figure class="listing"><figcaption>Relating object members to variables</figcaption><pre>
+const { <hi>firstName :</hi> a, <hi>lastName : </hi>b, <hi>age : </hi>c } 
+	= { firstName : "John" , lastName : "Doe" , age : 42 };
+console.log( a, b, c );
+<cc>	John Doe 42</cc>
+</pre></figure>
+
+<!--h3--Relating Object Members to Variables--></div>
+
+<h3 cbc>Accessing Nested Object Members</h3><div>
+
+<p>To access members in deeply nested object structures, cannot use the usual member access syntax (<tt>object.member</tt>). Instead, a special syntax has to be used:</p>
+
+<figure class="listing"><figcaption>nested object member access syntax</figcaption><pre>
+<hi>member <b>: {</b></hi> variable <hi><b>}</b></hi>
+</pre></figure>
+
+<p>where <em>member</em> is references source object member of type <tt>object</tt> (a "nested object"), and the variable name is implicitly associated with a member of the same name in that nested object. </p>
+
+<p>An example should make that clear. We have an object "o" with a nested object "branch":</p>
+
+<figure class="listing"><figcaption>Aliasing member names</figcaption><pre>
+const o = { fullName: "John Smith", branch: { city: "Detroit" } };
+const {
+  fullName : a,
+  branch : b ,
+  <hi>branch : {</hi> city <hi>}</hi>,
+} = o ;
+console.log( a, b, city );
+<cc>	John Smith {city: 'Detroit'} Detroit</cc>
+</pre></figure>
+
+<p>The third line implicitly associates the variable "city" with the "city" member of the "branch" object of the object "o". Combined with an explicit object member association:</p>
+
+<figure class="listing"><figcaption>Aliasing member names</figcaption><pre>
+const o = { fullName: "John Smith", branch: { city: "Detroit" } };
+const {
+  fullName : a,
+  branch : b ,
+  <hi>branch : {</hi> city : c },
+} = o ;
+console.log( a, b, c );
+<cc>	John Smith {city: 'Detroit'} Detroit</cc>
+</pre></figure>
+
+<p>The third line implicitly associates the variable "c" with the "city" member of the "branch" object of the object "o". </p>
+
+<!--h3--Accessing Nested Object Members--></div>
+
+<h3 cbc>Default Values</h3><div>
+
+<p>As in ordinary variable declarations, variables in destructuring assignments can have default values:</p>
+
+<figure class="listing"><figcaption>Default value assigment syntax</figcaption><pre>
+[ variable <hi>= value</hi> ] = array
+{ variable <hi>= value</hi> } = object
+{ object-member : { variable <hi>= value</hi> } } = object 
+</pre></figure>
+
+<!--h3--Default Values--></div>
+
+<h3 cbc>...Rest</h3><div>
+
+<p>The variable name list of a destructuring pattern can end on a rest property pattern: <tt>...variable-name</tt>. The elements or members that were not explicitly assigned go into an array or object of that name:</p>
+
+<figure class="listing"><figcaption>Rest property with arrays</figcaption><pre>
+const a = [ 12, 34, 56 ];
+const [ x, ...rest ] = a ;
+console.log( rest );
+	<cc>(2) [34, 56]</cc>
+</pre></figure>
+
+<p>The same with objects:</p>
+
+<figure class="listing"><figcaption>Rest property with objects</figcaption><pre>
+const o = { firstName : "John" , lastName : "Smith" , occupation : "mechanic" };
+const { firstName, ...rest } = o ;
+console.log( rest );
+	<cc>{lastName: 'Smith', occupation: 'mechanic'}</cc>
+</pre></figure>
+
+<!--h3--Rest--></div>
+
+<!--h2--Advanced Destructuring--></div>
+
+<h2 cbc>Tricks</h2><div>
+
+<h3 cbc>The Swap Trick</h3><div>
+
+<p>Two variables can be easily swapped in a single instruction:</p>
+
+<figure class="listing"><figcaption>Swapping variables</figcaption><pre>
+let a = 12, b = 34 ;
+[a, b] = [b, a] ;
+console.log( a, b );
+	<cc>34 12</cc>
+</pre></figure>
+
+<!--h3--The Swap Trick--></div>
+
+<!--Sh2--Tricks--></div>
+
+<h2 cbc>Reference Material</h2><div>
+
+<dl>
+<dt><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment">Destructuring assignment</a> on MDN</dt><dd>
+	<p>As it will easily be notices, this tutorial closely follows the referenced material. Full credits to Mozilla.</p>
+	</dd>
+</dl>
+
+<!--h2--Reference Material--></div>
+
+</body></html>
